@@ -505,12 +505,16 @@ class CoJiraProvisionerTarget extends CoProvisionerPluginTarget {
 
   protected function isJiraGroupProvisioned($groupName) {
     $isLast = false;
-    $startAt = 0;
+    $url = "";
     $isProvisioned = false;
     $provisionedMembersByName = array();
 
     while(!$isLast) {
-      $response = $this->Http->get("/rest/api/2/group/member?groupname=" . urlencode($groupName) . "&startAt=" . urlencode($startAt));
+      if(empty($url)) {
+        $url = "/rest/api/2/group/member?groupname=" . urlencode($groupName);
+      }
+      $this->log("FOO BAR url is " . print_r($url, true));
+      $response = $this->Http->get($url);
       if($response->code == 404) {
         $isProvisioned = false;
         break;
@@ -518,7 +522,12 @@ class CoJiraProvisionerTarget extends CoProvisionerPluginTarget {
         $isProvisioned = true;
         $provisionedData = json_decode($response->body);
         $isLast = $provisionedData->isLast;
-        $startAt = $provisionedData->startAt;
+        if(!$isLast) {
+          $nextPage = $provisionedData->nextPage;
+          $url = parse_url($nextPage, PHP_URL_PATH) . "?" . parse_url($nextPage, PHP_URL_QUERY);
+
+          $this->log("FOO isLast is " . print_r($isLast, true));
+        }
         foreach($provisionedData->values as $m) {
           $provisionedMembersByName[] = $m->name;
         }
