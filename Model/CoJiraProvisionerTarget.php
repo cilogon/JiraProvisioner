@@ -35,7 +35,14 @@ class CoJiraProvisionerTarget extends CoProvisionerPluginTarget {
   public $actsAs = array('Containable');
   
   // Association rules from this model to other models
-  public $belongsTo = array("CoProvisioningTarget");
+  public $belongsTo = array(
+    "CoProvisioningTarget",
+    "ProvisionCoGroup" => array(
+      'className' => 'CoGroup',
+      'foreignKey' => 'provision_co_group_id'
+    ),
+    "Server"
+  );
   
   // Default display field for cake generated views
   public $displayField = "server_id";
@@ -52,8 +59,11 @@ class CoJiraProvisionerTarget extends CoProvisionerPluginTarget {
       'required' => true
     ),
     'server_id' => array(
-      'rule' => 'numeric',
-      'required' => true
+      'content' => array(
+        'rule' => 'numeric',
+        'required' => true,
+        'unfreeze' => 'CO'
+      )
     ),
     'username_type' => array(
       'content' => array(
@@ -72,9 +82,12 @@ class CoJiraProvisionerTarget extends CoProvisionerPluginTarget {
       )
     ),
     'provision_co_group_id' => array(
-      'rule' => 'numeric',
-      'required' => false,
-      'allowEmpty' => true
+      'content' => array(
+        'rule' => 'numeric',
+        'required' => false,
+        'allowEmpty' => true,
+        'unfreeze' => 'CO'
+      )
     ),
     'query_by_username' => array(
       'rule' => 'boolean'
